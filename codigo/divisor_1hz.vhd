@@ -16,7 +16,7 @@ begin
     process (clk_50Mhz, resed)
     begin
         -- Reset asíncrono original del componente
-        if resed = '1' then
+        if resed = '0' then
             cuenta <= 0; 
             estado <= '0';
         elsif clk_50Mhz'event and clk_50Mhz = '1' then

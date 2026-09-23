@@ -16,12 +16,12 @@ architecture logica of cronometro_959 is
     signal cuentaUniSec : unsigned(3 downto 0) := (others => '0');
     signal cuentaDecSec : unsigned(3 downto 0) := (others => '0');
     signal cuentaMin    : unsigned(3 downto 0) := (others => '0');
-    signal estadoActivo : std_logic := '0';
+    signal estadoActivo : std_logic := '1';
     
     -- Memoria de tiempo de pulsación (cuenta latidos de 1Hz)
     signal cuenta_boton : integer range 0 to 3 := 0;
 begin
-    process (relojBase)
+    process (relojBase,boton_unico)
     begin
         if relojBase'event and relojBase = '1' then
             
@@ -40,6 +40,7 @@ begin
                 end if;
                 
             -- 2. LÓGICA DEL BOTÓN SUELTO ('1')
+           -- 2. LÓGICA DEL BOTÓN SUELTO ('1')
             else
                 
                 -- Verificamos si fue un clic corto (se soltó en el primer segundo)
@@ -49,31 +50,33 @@ begin
                     else
                         estadoActivo <= '1';
                     end if;
-                end if;
-                
-                -- Se borra la memoria del botón
-                cuenta_boton <= 0;
                 
                 -- 3. LÓGICA MATEMÁTICA DEL CRONÓMETRO
-                -- Solo avanza si está activo y no estás tocando el botón
-                if estadoActivo = '1' then
-                    if cuentaMin = 9 and cuentaDecSec = 5 and cuentaUniSec = 9 then
-                        estadoActivo <= '0'; -- Límite máximo
-                    else
-                        if cuentaUniSec = 9 then
-                            cuentaUniSec <= (others => '0');
-                            
-                            if cuentaDecSec = 5 then
-                                cuentaDecSec <= (others => '0');
-                                cuentaMin <= cuentaMin + 1;
-                            else
-                                cuentaDecSec <= cuentaDecSec + 1;
-                            end if;
+                -- Al usar 'else', garantizamos que NO cuente en el mismo instante que soltamos el botón
+                else
+                    -- Solo avanza si ya estaba activo desde el latido anterior
+                    if estadoActivo = '1' then
+                        if cuentaMin = 9 and cuentaDecSec = 5 and cuentaUniSec = 9 then
+                            estadoActivo <= '0'; -- Límite máximo
                         else
-                            cuentaUniSec <= cuentaUniSec + 1;
+                            if cuentaUniSec = 9 then
+                                cuentaUniSec <= (others => '0');
+                                
+                                if cuentaDecSec = 5 then
+                                    cuentaDecSec <= (others => '0');
+                                    cuentaMin <= cuentaMin + 1;
+                                else
+                                    cuentaDecSec <= cuentaDecSec + 1;
+                                end if;
+                            else
+                                cuentaUniSec <= cuentaUniSec + 1;
+                            end if;
                         end if;
                     end if;
                 end if;
+                
+                -- Se borra la memoria del botón obligatoriamente al final
+                cuenta_boton <= 0;
                 
             end if; -- Fin IF boton
             
