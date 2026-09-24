@@ -15,11 +15,10 @@ architecture logica of divisor_1hz is
 begin
     process (clk_50Mhz, resed)
     begin
-        -- Reset asíncrono original del componente
-        if resed = '0' then
+        if resed = '0' then	-- condicional de resed, si se activa el reloj va a cero
             cuenta <= 0; 
             estado <= '0';
-        elsif clk_50Mhz'event and clk_50Mhz = '1' then
+        elsif clk_50Mhz'event and clk_50Mhz = '1' then-- cuenta 25 millones de flancos de subida para dar medio segundo
             if cuenta = 24999999 then
                 estado <= not estado; 
                 cuenta <= 0;

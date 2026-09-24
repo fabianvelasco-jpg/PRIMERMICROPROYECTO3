@@ -62,7 +62,7 @@ begin
         end if;
     end process;
     
-    unidadesSec <= std_logic_vector(cuentaUniSec);
+    unidadesSec <= std_logic_vector(cuentaUniSec); -- asignacion de vectores a las cuentas de unidades (seg), decenas, y minutos 
     decenasSec  <= std_logic_vector(cuentaDecSec);
     unidadesMin <= std_logic_vector(cuentaMin);
 end architecture;

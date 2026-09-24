@@ -8,12 +8,14 @@ entity sistema_top is
         
         dispMinutos  : out std_logic_vector(6 downto 0);
         dispDecenas  : out std_logic_vector(6 downto 0);
-        dispUnidades : out std_logic_vector(6 downto 0)
+        dispUnidades : out std_logic_vector(6 downto 0);
+		  salidareloj  : out std_logic
     );
 end entity;
 
 architecture estructural of sistema_top is
-    
+    -- intanciacion de componentes para poder usarlos después en el codigo
+	 -- divizor de frecuencia a 1hz
     component divisor_1hz is
         port (clk_50Mhz, resed : in std_logic; clk_1Hz : out std_logic);
     end component;
@@ -35,21 +37,22 @@ architecture estructural of sistema_top is
         );
     end component;
 
-    -- Cables de interconexión interna
+    -- cables de conexión
     signal cableReloj1hz : std_logic;
     signal cableUniSec   : std_logic_vector(3 downto 0);
     signal cableDecSec   : std_logic_vector(3 downto 0);
     signal cableMin      : std_logic_vector(3 downto 0);
 
 begin
-    
-    -- El divisor recibe '0' constante en resed para no detenerse jamás
+    salidareloj <= cableReloj1hz; --cable para el punto y se vea la division de segundos y minutos en la fpga
+	 
+    -- divisor de frecuencia para obtener el reloj de 1hz
     U1: divisor_1hz port map (
-        clk_50Mhz => reloj50Mhz,
-        resed     => '0',
+        clk_50Mhz => reloj50Mhz, 
+        resed     => '1',
         clk_1Hz   => cableReloj1hz
     );
-
+			-- cronometro 959 para poder tener los segunos, minuts etc
     U2: cronometro_959 port map (
         relojBase   => cableReloj1hz,
         boton_unico => boton_unico,
@@ -57,7 +60,7 @@ begin
         decenasSec  => cableDecSec,
         unidadesMin => cableMin
     );
-
+		--aquí tres decodificador_7seg para cada uno de los 7 segmentos, uno para unidades, decenas y minutos
     U3_Minutos: decodificador_7seg port map (
         entradaBCD => cableMin, 
         salida7seg => dispMinutos
