@@ -23,37 +23,26 @@ architecture logica of cronometro_959 is
 begin
     process (relojBase,boton_unico)
     begin
-        if relojBase'event and relojBase = '1' then
+        
             
-            -- 1. LÓGICA DEL BOTÓN PRESIONADO ('0')
-            if boton_unico = '0' then
-                
-                if cuenta_boton = 2 then
-                    -- Al llegar a 2 segundos exactos, aplica RESET
+           if boton_unico = '0' then
+
+                if cuenta_boton = 0 then
+                    -- Primer latido con el botón: alterna start/stop YA
+                    estadoActivo <= not estadoActivo;
+                    cuenta_boton <= 1;
+
+                elsif cuenta_boton = 1 then
+                    -- Segundo latido seguido: RESET
                     cuentaUniSec <= (others => '0');
                     cuentaDecSec <= (others => '0');
                     cuentaMin    <= (others => '0');
                     estadoActivo <= '0';
-                else
-                    -- Mientras lo mantengas, suma 1 latido por segundo
-                    cuenta_boton <= cuenta_boton + 1;
+                    cuenta_boton <= 2;
                 end if;
-                
-            -- 2. LÓGICA DEL BOTÓN SUELTO ('1')
-           -- 2. LÓGICA DEL BOTÓN SUELTO ('1')
-            else
-                
-                -- Verificamos si fue un clic corto (se soltó en el primer segundo)
-                if cuenta_boton > 0 and cuenta_boton < 2 then
-                    if estadoActivo = '1' then
-                        estadoActivo <= '0';
-                    else
-                        estadoActivo <= '1';
-                    end if;
-                
-                -- 3. LÓGICA MATEMÁTICA DEL CRONÓMETRO
-                -- Al usar 'else', garantizamos que NO cuente en el mismo instante que soltamos el botón
-                else
+
+                elsif
+						if relojBase'event and relojBase = '1' then
                     -- Solo avanza si ya estaba activo desde el latido anterior
                     if estadoActivo = '1' then
                         if cuentaMin = 9 and cuentaDecSec = 5 and cuentaUniSec = 9 then
@@ -70,17 +59,15 @@ begin
                                 end if;
                             else
                                 cuentaUniSec <= cuentaUniSec + 1;
-                            end if;
-                        end if;
-                    end if;
+                           end if;
+                       end if;
+                  end if;
                 end if;
-                
+              
                 -- Se borra la memoria del botón obligatoriamente al final
                 cuenta_boton <= 0;
-                
-            end if; -- Fin IF boton
-            
-        end if;
+              end if;  
+            end if;
     end process;
     
     -- Traducción a vectores lógicos
