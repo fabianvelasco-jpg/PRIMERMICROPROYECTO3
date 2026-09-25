@@ -22,26 +22,17 @@ architecture estructural of sistema_top is
 
     component cronometro_959 is
         port (
+			   clk_50Mhz   : in  std_logic;
             relojBase   : in  std_logic;
             boton_unico : in  std_logic;
-            unidadesSec : out std_logic_vector(3 downto 0);
-            decenasSec  : out std_logic_vector(3 downto 0);
-            unidadesMin : out std_logic_vector(3 downto 0)
-        );
-    end component;
-
-    component decodificador_7seg is
-        port (
-            entradaBCD : in std_logic_vector(3 downto 0);
-            salida7seg : out std_logic_vector(6 downto 0)
+            unidadesSec : out std_logic_vector(6 downto 0);
+            decenasSec  : out std_logic_vector(6 downto 0);
+            unidadesMin : out std_logic_vector(6 downto 0)
         );
     end component;
 
     -- cables de conexión
     signal cableReloj1hz : std_logic;
-    signal cableUniSec   : std_logic_vector(3 downto 0);
-    signal cableDecSec   : std_logic_vector(3 downto 0);
-    signal cableMin      : std_logic_vector(3 downto 0);
 
 begin
     salidareloj <= cableReloj1hz; --cable para el punto y se vea la division de segundos y minutos en la fpga
@@ -54,26 +45,13 @@ begin
     );
 			-- cronometro 959 para poder tener los segunos, minuts etc
     U2: cronometro_959 port map (
+		  clk_50Mhz   => reloj50Mhz,
         relojBase   => cableReloj1hz,
         boton_unico => boton_unico,
-        unidadesSec => cableUniSec,
-        decenasSec  => cableDecSec,
-        unidadesMin => cableMin
+        unidadesSec => dispUnidades,
+        decenasSec  => dispDecenas,
+        unidadesMin => dispMinutos
     );
-		--aquí tres decodificador_7seg para cada uno de los 7 segmentos, uno para unidades, decenas y minutos
-    U3_Minutos: decodificador_7seg port map (
-        entradaBCD => cableMin, 
-        salida7seg => dispMinutos
-    );
-    
-    U4_Decenas: decodificador_7seg port map (
-        entradaBCD => cableDecSec, 
-        salida7seg => dispDecenas
-    );
-    
-    U5_Unidades: decodificador_7seg port map (
-        entradaBCD => cableUniSec, 
-        salida7seg => dispUnidades
-    );
+
 
 end architecture;
