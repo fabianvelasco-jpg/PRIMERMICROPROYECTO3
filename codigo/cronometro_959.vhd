@@ -19,33 +19,31 @@ architecture logica of cronometro_959 is
     signal cuentaMin    : unsigned(3 downto 0) := (others => '0');
     signal estadoActivo : std_logic := '0';
 	 signal orden_reset  : std_logic := '0';
-    
     signal filtro_ruido : integer range 0 to 100000005 := 0;
-    signal cuenta_boton : integer range 0 to 3 := 0;
 begin
+-- función sntirrebote
 process (clk_50Mhz)
-    begin
-        if clk_50Mhz'event and clk_50Mhz = '1' then
-            if boton_unico = '0' then
+    begin	 
+        if clk_50Mhz'event and clk_50Mhz = '1' then -- bloque antirrebote, se evalua cada flanco de subida de reloj
+            if boton_unico = '0' then -- evalua el estado del botón
                 
-                if filtro_ruido < 50000 then
-                    filtro_ruido <= filtro_ruido + 1; 
+                if filtro_ruido < 50000 then         -- este primer condicional hace que no se tomen como validos toques menores a 1mS, eliminando el ruido de los rebotes
+                    filtro_ruido <= filtro_ruido + 1; -- que por lo general no duran más de 1mS
                     
-                elsif filtro_ruido = 50000 then
+                elsif filtro_ruido = 50000 then-- cuando ya se haya mantenido por 1mS, se toma como valida la pulsación y se niega el estadoActivo 
                     estadoActivo <= not estadoActivo; 
                     filtro_ruido <= filtro_ruido + 1;
                     
-                elsif filtro_ruido < 100000000 then
+                elsif filtro_ruido < 100000000 then  -- este bloque sigue contando para ver si se sigue manteniendo el botón, sin hacer ningun cambio
                     filtro_ruido <= filtro_ruido + 1;
                     
-                elsif filtro_ruido = 100000000 then
+                elsif filtro_ruido = 100000000 then -- ya cuando pasen 2 segundos o 100Mhz, es entonces que tomarán cambios para el resed
                     orden_reset <= '1';              
                     estadoActivo <= '0';
                     filtro_ruido <= 100000001;     
-                end if;
-                
+                end if;               
             else
-                filtro_ruido <= 0;
+                filtro_ruido <= 0;	-- aquí se reinia todo para una siguiente pulsación 
                 orden_reset  <= '0';
             end if;
         end if;
@@ -55,7 +53,7 @@ process (clk_50Mhz)
     begin
         
       -- if general      
-		if orden_reset = '1' then
+		if orden_reset = '1' then --primero se evalua el resed, si está activo simplemente todo se va a cero
             cuentaUniSec <= (others => '0');
             cuentaDecSec <= (others => '0');
             cuentaMin    <= (others => '0');
@@ -79,11 +77,9 @@ process (clk_50Mhz)
                     end if;
                 end if;
             end if;
-            
-            cuenta_boton <= 0; -- al final la cuenta del botón se hace cero para evitar reconteos indeseados
         end if;
     end process;
-	 
+	 -- decodificador
 	  process(cuentaUniSec)
     begin
         case std_logic_vector(cuentaUniSec) is
